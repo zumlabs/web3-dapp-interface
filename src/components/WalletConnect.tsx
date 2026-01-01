@@ -2,16 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import { TIMELOCK_ABI, TIMELOCK_ADDRESS } from "@/lib/TimeLockWallet";
 
 export default function WalletConnect() {
-  const [address, setAddress] = useState<string>("");
-  const [balance, setBalance] = useState<string>("");
+  const [address, setAddress] = useState("");
+  const [balance, setBalance] = useState("");
+  const [unlockTime, setUnlockTime] = useState<number | null>(null);
+  const [isLocked, setIsLocked] = useState<boolean | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
+  const formatAddress = (addr: string) =>
+    `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
   async function connectWallet() {
     if (!window.ethereum) {
@@ -25,11 +27,28 @@ export default function WalletConnect() {
       const signer = await provider.getSigner();
       const addr = await signer.getAddress();
       const bal = await provider.getBalance(addr);
-      
+
       setAddress(addr);
       setBalance(parseFloat(ethers.formatEther(bal)).toFixed(4));
-    } catch (error) {
-      console.error(error);
+
+      // --- READ CONTRACT ---
+      try {
+        const contract = new ethers.Contract(
+          TIMELOCK_ADDRESS,
+          TIMELOCK_ABI,
+          provider
+        );
+
+        const ts: bigint = await contract.unlockTime();
+        const unlock = Number(ts);
+
+        setUnlockTime(unlock);
+        setIsLocked(unlock > Math.floor(Date.now() / 1000));
+      } catch {
+        // contract belum deploy / address dummy
+        setUnlockTime(null);
+        setIsLocked(null);
+      }
     } finally {
       setIsConnecting(false);
     }
@@ -38,6 +57,8 @@ export default function WalletConnect() {
   function disconnect() {
     setAddress("");
     setBalance("");
+    setUnlockTime(null);
+    setIsLocked(null);
     setShowDropdown(false);
   }
 
@@ -46,7 +67,6 @@ export default function WalletConnect() {
     setShowDropdown(false);
   }
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClick = () => setShowDropdown(false);
     if (showDropdown) {
@@ -66,31 +86,46 @@ export default function WalletConnect() {
           className="flex items-center gap-3 bg-[#1a1a1a] hover:bg-[#252525] border border-[#2a2a2a] px-4 py-2.5 rounded-xl transition-all"
         >
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-white text-sm font-medium">{balance} ETH</span>
+            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            <span className="text-white text-sm font-medium">
+              {balance} ETH
+            </span>
           </div>
-          <div className="h-4 w-px bg-[#333]"></div>
-          <span className="text-[#808080] text-sm">{formatAddress(address)}</span>
+          <div className="h-4 w-px bg-[#333]" />
+          <span className="text-[#808080] text-sm">
+            {formatAddress(address)}
+          </span>
         </button>
 
         {showDropdown && (
-          <div className="absolute right-0 mt-2 w-48 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-xl z-50">
+          <div className="absolute right-0 mt-2 w-56 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-xl z-50">
+            {unlockTime && (
+              <div className="px-4 py-3 border-b border-[#2a2a2a] text-sm">
+                <div className="text-[#808080]">TimeLock Status</div>
+                <div
+                  className={`mt-1 font-semibold ${
+                    isLocked ? "text-red-400" : "text-green-400"
+                  }`}
+                >
+                  {isLocked ? "Locked" : "Unlocked"}
+                </div>
+                <div className="text-xs text-[#666] mt-1">
+                  {new Date(unlockTime * 1000).toLocaleString()}
+                </div>
+              </div>
+            )}
+
             <button
               onClick={copyAddress}
-              className="w-full px-4 py-3 text-left text-sm text-[#808080] hover:bg-[#252525] hover:text-white transition-colors flex items-center gap-2"
+              className="w-full px-4 py-3 text-left text-sm text-[#808080] hover:bg-[#252525] hover:text-white transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
               Copy Address
             </button>
+
             <button
               onClick={disconnect}
-              className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-[#252525] transition-colors flex items-center gap-2"
+              className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-[#252525] transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
               Disconnect
             </button>
           </div>
