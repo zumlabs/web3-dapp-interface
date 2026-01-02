@@ -1,69 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ethers } from "ethers";
-import { TIMELOCK_ABI, TIMELOCK_ADDRESS } from "@/lib/TimeLockWallet";
+import { useWallet } from "@/contexts/WalletContext";
 
 export default function WalletConnect() {
-  const [address, setAddress] = useState("");
-  const [balance, setBalance] = useState("");
-  const [unlockTime, setUnlockTime] = useState<number | null>(null);
-  const [isLocked, setIsLocked] = useState<boolean | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const { address, balance, unlockTime, isLocked, isConnecting, connectWallet, disconnect } = useWallet();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const formatAddress = (addr: string) =>
     `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
-  async function connectWallet() {
-    if (!window.ethereum) {
-      alert("Please install MetaMask");
-      return;
-    }
-
-    setIsConnecting(true);
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const addr = await signer.getAddress();
-      const bal = await provider.getBalance(addr);
-
-      setAddress(addr);
-      setBalance(parseFloat(ethers.formatEther(bal)).toFixed(4));
-
-      // --- READ CONTRACT ---
-      try {
-        const contract = new ethers.Contract(
-          TIMELOCK_ADDRESS,
-          TIMELOCK_ABI,
-          provider
-        );
-
-        const ts: bigint = await contract.unlockTime();
-        const unlock = Number(ts);
-
-        setUnlockTime(unlock);
-        setIsLocked(unlock > Math.floor(Date.now() / 1000));
-      } catch {
-        // contract belum deploy / address dummy
-        setUnlockTime(null);
-        setIsLocked(null);
-      }
-    } finally {
-      setIsConnecting(false);
-    }
-  }
-
-  function disconnect() {
-    setAddress("");
-    setBalance("");
-    setUnlockTime(null);
-    setIsLocked(null);
+  async function copyAddress() {
+    await navigator.clipboard.writeText(address);
     setShowDropdown(false);
   }
 
-  async function copyAddress() {
-    await navigator.clipboard.writeText(address);
+  async function handleDisconnect() {
+    await disconnect();
     setShowDropdown(false);
   }
 
@@ -123,7 +76,7 @@ export default function WalletConnect() {
             </button>
 
             <button
-              onClick={disconnect}
+              onClick={handleDisconnect}
               className="w-full px-4 py-3 text-left text-sm text-red-400 hover:bg-[#252525] transition-colors"
             >
               Disconnect

@@ -1,29 +1,64 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
 import WalletConnect from "@/components/WalletConnect";
+import { useWallet } from "@/contexts/WalletContext";
 
 export default function Home() {
+  const { address, connectWallet, isConnecting } = useWallet();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-[#0d0d0d]">
+    <div className="min-h-screen bg-[#0d0d0d]" suppressHydrationWarning>
       {/* Navigation */}
-      <nav className="border-b border-[#1a1a1a] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <span className="text-xl font-semibold text-white">⬡ Nexus</span>
-            <div className="hidden md:flex items-center gap-6 text-[#808080] text-sm">
-              <a href="#" className="hover:text-white transition-colors">Swap</a>
-              <a href="#" className="hover:text-white transition-colors">Pool</a>
-              <a href="#" className="hover:text-white transition-colors">Stake</a>
-              <a href="#" className="hover:text-white transition-colors">Bridge</a>
+      <nav className="border-b border-[#1a1a1a] px-6 py-4" suppressHydrationWarning>
+        <div className="max-w-7xl mx-auto flex items-center justify-between" suppressHydrationWarning>
+          <div className="flex items-center gap-8" suppressHydrationWarning>
+            <span className="text-xl font-semibold text-white">⬡ zumlabs</span>
+            <div className="hidden md:flex items-center gap-6 text-[#808080] text-sm" suppressHydrationWarning>
+              <Link href="#" className="hover:text-white transition-colors">Swap</Link>
+              <Link href="#" className="hover:text-white transition-colors">Pool</Link>
+              <Link href="#" className="hover:text-white transition-colors">Stake</Link>
+              <Link href="#" className="hover:text-white transition-colors">Bridge</Link>
             </div>
           </div>
-          <WalletConnect />
+          <div className="flex items-center gap-4">
+            <WalletConnect />
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden text-[#808080] hover:text-white transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
+        
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden mt-4 pt-4 border-t border-[#1a1a1a]" suppressHydrationWarning>
+            <div className="flex flex-col gap-4 text-[#808080] text-sm">
+              <Link href="#" className="hover:text-white transition-colors">Swap</Link>
+              <Link href="#" className="hover:text-white transition-colors">Pool</Link>
+              <Link href="#" className="hover:text-white transition-colors">Stake</Link>
+              <Link href="#" className="hover:text-white transition-colors">Bridge</Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-lg mx-auto mt-20 px-4">
+      <main className="max-w-lg mx-auto mt-20 px-4" suppressHydrationWarning>
         {/* Swap Card */}
-        <div className="bg-[#131313] rounded-2xl border border-[#1a1a1a] p-4">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-[#131313] rounded-2xl border border-[#1a1a1a] p-4" suppressHydrationWarning>
+          <div className="flex items-center justify-between mb-4" suppressHydrationWarning>
             <span className="text-white font-medium">Swap</span>
             <button className="text-[#808080] hover:text-white transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,19 +69,19 @@ export default function Home() {
           </div>
 
           {/* From Input */}
-          <div className="bg-[#1a1a1a] rounded-xl p-4 mb-1">
-            <div className="flex justify-between mb-2">
+          <div className="bg-[#1a1a1a] rounded-xl p-4 mb-1" suppressHydrationWarning>
+            <div className="flex justify-between mb-2" suppressHydrationWarning>
               <span className="text-[#808080] text-sm">You pay</span>
               <span className="text-[#808080] text-sm">Balance: 0.00</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" suppressHydrationWarning>
               <input 
                 type="text" 
                 placeholder="0" 
                 className="bg-transparent text-3xl text-white outline-none w-full"
               />
               <button className="flex items-center gap-2 bg-[#2a2a2a] hover:bg-[#333] px-3 py-2 rounded-xl transition-colors">
-                <div className="w-6 h-6 rounded-full bg-[#627eea]"></div>
+                <div className="w-6 h-6 rounded-full bg-[#627eea]" suppressHydrationWarning></div>
                 <span className="text-white font-medium">ETH</span>
                 <svg className="w-4 h-4 text-[#808080]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -56,7 +91,7 @@ export default function Home() {
           </div>
 
           {/* Swap Arrow */}
-          <div className="flex justify-center -my-2 relative z-10">
+          <div className="flex justify-center -my-2 relative z-10" suppressHydrationWarning>
             <button className="bg-[#1a1a1a] border-4 border-[#131313] rounded-xl p-2 hover:bg-[#252525] transition-colors">
               <svg className="w-4 h-4 text-[#808080]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -65,19 +100,19 @@ export default function Home() {
           </div>
 
           {/* To Input */}
-          <div className="bg-[#1a1a1a] rounded-xl p-4 mb-4">
-            <div className="flex justify-between mb-2">
+          <div className="bg-[#1a1a1a] rounded-xl p-4 mb-4" suppressHydrationWarning>
+            <div className="flex justify-between mb-2" suppressHydrationWarning>
               <span className="text-[#808080] text-sm">You receive</span>
               <span className="text-[#808080] text-sm">Balance: 0.00</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" suppressHydrationWarning>
               <input 
                 type="text" 
                 placeholder="0" 
                 className="bg-transparent text-3xl text-white outline-none w-full"
               />
               <button className="flex items-center gap-2 bg-[#2a2a2a] hover:bg-[#333] px-3 py-2 rounded-xl transition-colors">
-                <div className="w-6 h-6 rounded-full bg-[#2775ca]"></div>
+                <div className="w-6 h-6 rounded-full bg-[#2775ca]" suppressHydrationWarning></div>
                 <span className="text-white font-medium">USDC</span>
                 <svg className="w-4 h-4 text-[#808080]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -87,17 +122,15 @@ export default function Home() {
           </div>
 
           {/* Connect/Swap Button */}
-          <button className="w-full bg-[#4c82fb] hover:bg-[#3a6fd8] text-white font-semibold py-4 rounded-xl transition-colors">
-            Connect Wallet
+          <button 
+            onClick={connectWallet}
+            disabled={isConnecting}
+            className="w-full bg-[#4c82fb] hover:bg-[#3a6fd8] text-white font-semibold py-4 rounded-xl transition-colors disabled:opacity-50"
+          >
+            {address ? "Swap" : (isConnecting ? "Connecting..." : "Connect Wallet")}
           </button>
         </div>
 
-        {/* Info */}
-        <div className="flex items-center justify-center gap-4 mt-6 text-[#808080] text-xs">
-          <span>Powered by Ethereum</span>
-          <span>•</span>
-          <span>Gas: 12 gwei</span>
-        </div>
       </main>
     </div>
   );
